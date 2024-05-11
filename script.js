@@ -1,35 +1,70 @@
-let prevScrollPos = window.pageYOffset;
-
-window.onscroll = function() {
-    let currentScrollPos = window.pageYOffset;
-    let navbar = document.getElementById("header");
-
-    if (prevScrollPos > currentScrollPos) {
-        navbar.classList.remove("transparent");
-    } else {
-        navbar.classList.add("transparent");
-    }
-    prevScrollPos = currentScrollPos;
-}
-
 'use strict';
+
 const addEventOnElements = function (elements, eventType, callback) {
     for (let i = 0, len = elements.length; i < len; i++) {
       elements[i].addEventListener(eventType, callback);
     }
-  }
+}
 
-  const navbar = document.querySelector("[data-navbar]");
+const navbar = document.querySelector("[data-navbar]");
 const navTogglers = document.querySelectorAll("[data-nav-toggler]");
+const header = document.querySelector("[data-header]");
+
+let prevScrollPosition = window.pageYOffset;
+let isScrollingDown = false;
+let isNavbarActive = false;
 
 const toggleNav = () => {
-  navbar.classList.toggle("active");
-  document.body.classList.toggle("nav-active");
+  const windowWidth = window.innerWidth;
+  if (windowWidth < 1200) {
+    navbar.classList.toggle("active");
+    document.body.classList.toggle("nav-active");
+    isNavbarActive = !isNavbarActive;
+    updateHeaderAndNavbarVisibility(); 
+  }
 }
+
+const updateHeaderAndNavbarVisibility = () => {
+  const currentScrollPos = window.pageYOffset;
+  
+  if (currentScrollPos > prevScrollPosition) {
+    header.classList.add("transparent");
+    isScrollingDown = true;
+  } else {
+    header.classList.remove("transparent");
+    isScrollingDown = false;
+  }
+
+  if (!isScrollingDown && currentScrollPos < prevScrollPosition - 50) {
+    header.classList.remove("transparent");
+    isScrollingDown = false;
+  }
+
+  prevScrollPosition = currentScrollPos;
+
+}
+
+const updateHeaderSize = () => {
+  const currentScrollPos = window.pageYOffset;
+  const scrolledDown = currentScrollPos > prevScrollPosition;
+
+  header.classList.toggle("scrolled-down", scrolledDown && currentScrollPos > 50);
+  prevScrollPosition = currentScrollPos;
+};
+
+window.addEventListener("scroll", () => {
+  updateHeaderAndNavbarVisibility();
+  updateHeaderSize();
+});
+
 
 addEventOnElements(navTogglers, "click", toggleNav);
 
-const header = document.querySelector("[data-header]");
+document.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!navbar.contains(target)) { 
+      isNavbarActive = false; updateHeaderAndNavbarVisibility(); } }); 
+
 const backTopBtn = document.querySelector("[data-back-top-btn]");
 
 window.addEventListener("scroll", () => {
@@ -41,6 +76,8 @@ window.addEventListener("scroll", () => {
     backTopBtn.classList.remove("active");
   }
 });
+
+window.addEventListener("resize", updateHeaderAndNavbarVisibility);
 
 const slider = document.querySelector("[data-slider]");
 const sliderContainer = document.querySelector("[data-slider-container]");
@@ -87,3 +124,20 @@ window.addEventListener("resize", function () {
 
     moveSliderItem();
 });
+
+const cardBtns = document.querySelectorAll("[data-readmore]");
+const handleResize = () => {
+    if (window.innerWidth < 1200) {
+        cardBtns.forEach(btn => {
+            btn.classList.add("readmore");
+        });
+    } else {
+        cardBtns.forEach(btn => {
+            btn.classList.remove("readmore");
+        });
+    }
+};
+
+handleResize();
+
+window.addEventListener('resize', handleResize);
